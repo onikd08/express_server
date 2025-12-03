@@ -223,6 +223,82 @@ app.get("/todos", async (req: Request, res: Response) => {
   }
 });
 
+app.get("/todos/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(`SELECT * FROM todos WHERE id=$1`, [id]);
+    if (result.rows.length === 0) {
+      res.status(404).json({
+        message: "Todo not found",
+        success: false,
+      });
+    } else {
+      res.status(200).json({
+        success: true,
+        message: "Todo fetched successfully",
+        data: result.rows[0],
+      });
+    }
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+app.put("/todos/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { user_id, title } = req.body;
+  try {
+    const result = await pool.query(
+      `UPDATE todos SET user_id=$1, title=$2 WHERE id=$3 RETURNING *`,
+      [user_id, title, id]
+    );
+    if (result.rows.length === 0) {
+      res.status(404).json({
+        message: "Todo not found",
+        success: false,
+      });
+    } else {
+      res.status(201).json({
+        message: "Todo updated successfully",
+        data: result.rows[0],
+        success: true,
+      });
+    }
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+app.delete("/todos/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(`DELETE FROM todos WHERE id=$1`, [id]);
+    if (result.rowCount === 0) {
+      res.status(404).json({
+        message: "Todo not found",
+        success: false,
+      });
+    } else {
+      res.status(201).json({
+        message: "Todo deleted successfully",
+        data: null,
+        success: true,
+      });
+    }
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
 // Not found
 app.use((req: Request, res: Response) => {
   res.status(404).json({
