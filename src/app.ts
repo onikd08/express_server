@@ -13,6 +13,10 @@ app.use(express.urlencoded({ extended: true }));
 
 initDB(); // initialize database
 
+app.get("/", (req, res) => {
+  res.send("Hello world");
+});
+
 // users API
 app.use("/users", userRoutes);
 
